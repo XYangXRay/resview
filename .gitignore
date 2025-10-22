@@ -1,0 +1,12 @@
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.vscode/
+.venv/
+.pixi/
+build/
+dist/
+*.egg-info/
+*.pyc
+.DS_Store
+rsm3d_defaults.yaml

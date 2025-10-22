@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling>=1.24", "hatch-vcs>=0.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "resview"
+dynamic = ["version"]
+description = "ResView — Reciprocal-Space Builder and Viewer"
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { file = "LICENSE" }
+authors = [{ name = "Xiaogang Yang", email = "yangxg@bnl.gov" }]
+requires-python = ">=3.13"
+classifiers = [
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "numpy>=1.23",
+  "pyyaml>=6",
+  "qtpy>=2.4",
+  "magicgui>=0.9",
+  "napari==0.6.6",
+  "xrayutilities==1.7.10",
+]
+
+[project.optional-dependencies]
+pyside6 = ["pyside6>=6.5"]
+pyqt6   = ["pyqt6>=6.5"]
+
+[project.urls]
+Homepage = "https://github.com/your-org/resview"
+Issues   = "https://github.com/your-org/resview/issues"
+
+[project.scripts]
+resview = "resview.gui:main"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "README.md", "LICENSE"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/resview"]
+
+[tool.ruff]
+line-length = 100
+lint.select = ["E", "F", "I", "B"]
+lint.ignore = ["E501"]
