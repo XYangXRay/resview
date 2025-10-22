@@ -5,11 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "resview"
 dynamic = ["version"]
-description = "ResView — Reciprocal-Space Builder and Viewer"
+description = "ResView — Reciprocal Space Builder and Viewer"
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
 authors = [{ name = "Xiaogang Yang", email = "yangxg@bnl.gov" }]
-requires-python = ">=3.13"
+requires-python = ">=3.11,<3.14"
 classifiers = [
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3",
@@ -18,11 +18,18 @@ classifiers = [
 ]
 dependencies = [
   "numpy>=1.23",
+  "pandas>=2.3.0",
+  "dask==2025.9.1",
+  "pyarrow>=21.0.0",
+  "hdf5plugin>=6.0.0",
   "pyyaml>=6",
   "qtpy>=2.4",
+  "pyside6>=6.7",  # required Qt binding
   "magicgui>=0.9",
   "napari==0.6.6",
+  "vtk>=9.0",
   "xrayutilities==1.7.10",
+
 ]
 
 [project.optional-dependencies]
@@ -43,9 +50,23 @@ source = "vcs"
 include = ["src", "README.md", "LICENSE"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/resview"]
+packages = ["src/resview", "src/rsm3d"]
 
 [tool.ruff]
 line-length = 100
 lint.select = ["E", "F", "I", "B"]
 lint.ignore = ["E501"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64"]
+
+[tool.pixi.pypi-dependencies]
+resview = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+pyqt6 = { features = ["pyqt6"], solve-group = "default" }
+pyside6 = { features = ["pyside6"], solve-group = "default" }
+
+[tool.pixi.tasks]

@@ -10,3 +10,7 @@ dist/
 *.pyc
 .DS_Store
 rsm3d_defaults.yaml
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+pixi.lock
