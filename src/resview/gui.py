@@ -37,6 +37,8 @@ from rsm3d.rsm3d import RSMBuilder
 # Theme / QSS
 # ─────────────────────────────────────────────────────────────────────────────
 
+
+
 APP_QSS = """
 QMainWindow { background: #fafafa; }
 QGroupBox {

@@ -9,7 +9,7 @@ description = "ResView — Reciprocal Space Builder and Viewer"
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
 authors = [{ name = "Xiaogang Yang", email = "yangxg@bnl.gov" }]
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.13,<3.14"  # limit Python to versions with vtk wheels (no cp314 yet)
 classifiers = [
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3",
@@ -17,28 +17,43 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 dependencies = [
-  "numpy>=1.23",
-  "pandas>=2.3.0",
-  "dask==2025.9.1",
+  # Priority fixed versions:
+  "napari==0.6.6",
+  "xrayutilities==1.7.10",
+  # Other deps relaxed
+  "numpy>=2.3.3",
+  "pandas>=2.3.3",
+  "dask>=2024.8.0",
   "pyarrow>=21.0.0",
   "hdf5plugin>=6.0.0",
-  "pyyaml>=6",
-  "qtpy>=2.4",
-  "pyside6>=6.7",  # required Qt binding
-  "magicgui>=0.9",
-  "napari==0.6.6",
-  "vtk>=9.0",
-  "xrayutilities==1.7.10",
-
+  "pyyaml>=6.0.3",
+  "qtpy>=2.4.3",
+  "pyside6>=6.8",
+  "magicgui>=0.10.1",
+  # vtk wheel not available for linux-aarch64 (pip). Keep pin elsewhere, skip on aarch64.
+  "vtk==9.4.2; platform_machine != 'aarch64'",
 ]
+# Priority strategy: pin only napari & xrayutilities; others float upward.
 
 [project.optional-dependencies]
-pyside6 = ["pyside6>=6.5"]
-pyqt6   = ["pyqt6>=6.5"]
+auto = [
+  "napari==0.5.6",
+  "xrayutilities==1.7.10",
+  "numpy>=2.3.3",
+  "pandas>=2.3.3",
+  "dask[dataframe]>=2024.8.0",
+  "pyarrow>=21.0.0",
+  "hdf5plugin>=6.0.0",
+  "pyyaml>=6.0.3",
+  "qtpy>=2.4.3",
+  "pyside6>=6.8",
+  "magicgui>=0.10.1",
+  "vtk>=9.4.2; platform_machine != 'aarch64'",
+]
 
 [project.urls]
-Homepage = "https://github.com/your-org/resview"
-Issues   = "https://github.com/your-org/resview/issues"
+Homepage = "https://github.com/XYangXRay/resview"
+Issues   = "https://github.com/XYangXRay/resview/issues"
 
 [project.scripts]
 resview = "resview.gui:main"
@@ -58,15 +73,31 @@ lint.select = ["E", "F", "I", "B"]
 lint.ignore = ["E501"]
 
 [tool.pixi.workspace]
+# Removed 'defaults' (404 at https://conda.anaconda.org/defaults/). All deps available on conda-forge.
+# If you need Anaconda Main later, specify direct URL channel instead.
 channels = ["conda-forge"]
-platforms = ["osx-arm64"]
+platforms = [
+  "osx-arm64",
+  "osx-64",
+  "linux-64",
+  "win-64"
+]
+# Wheel install inside pixi shell:
+# When you pip install dist/resview-*.whl inside this shell:
+#   - Existing conda-installed packages (from conda-forge/defaults) satisfying pinned versions are reused.
+#   - Any missing or mismatched pinned versions are fetched from PyPI and may shadow conda builds.
+#   - Mixing conda and PyPI wheels for compiled libs (numpy, vtk, pyside6) can cause ABI issues if versions differ.
+# To avoid conflicts:
+#   1) Ensure pixi environment matches pins before installing the wheel.
+#   2) Or build the wheel in the same pixi environment.
 
 [tool.pixi.pypi-dependencies]
 resview = { path = ".", editable = true }
+# NOTE: Entering `pixi shell` solves and installs this editable package automatically;
+# no separate `pip install -e .` needed. The `resview` console script will be on PATH.
 
 [tool.pixi.environments]
 default = { solve-group = "default" }
-pyqt6 = { features = ["pyqt6"], solve-group = "default" }
-pyside6 = { features = ["pyside6"], solve-group = "default" }
+
 
 [tool.pixi.tasks]
