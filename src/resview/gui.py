@@ -587,7 +587,8 @@ def main() -> None:
                 pass
 
     # ── App state
-    state: Dict[str, Any] = dict(loader=None, builder=None, grid=None, edges=None)
+    # (find the first active state dict for the running version; add grid_space)
+    state: Dict[str, Any] = dict(loader=None, builder=None, grid=None, edges=None, grid_space=None)
 
     # ── Actions ─────────────────────────────────────────────────────────────
     def on_view_intensity():

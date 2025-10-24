@@ -226,7 +226,8 @@ class ScanAngles:
         counter = 0
         current_ub = None
         skip_scan = False
-        scan_results_start = 0  # index to roll back if skipping
+        scan_results_start = 0
+        scan_axis_name = None  # NEW: hold ascan scanned axis name
 
         with open(self.filename) as f:
             for raw in f:
@@ -244,6 +245,7 @@ class ScanAngles:
                     current_ub = None
                     skip_scan = False
                     scan_results_start = len(results)
+                    scan_axis_name = None  # reset for new scan
                     continue
 
                 if skip_scan:
@@ -269,12 +271,12 @@ class ScanAngles:
                     if cur_type.lower() == 'ascan':
                         axes = [c for c in self.ASCAN_AXES if c in cols]
                         if len(axes) != 1:
-                            # cannot determine which axis was scanned or ambiguous
                             print(f"[spec_parser] Ignoring scan {cur_scan}: ambiguous or missing scan axis.")
                             skip_scan = True
                             continue
                         scan_col = axes[0]
                         data_idx['scan_col'] = cols.index(scan_col)
+                        scan_axis_name = scan_col  # store separately (DO NOT put in data_idx)
                         # H,K,L must exist
                         need_cols = {'H', 'K', 'L'}
                         if not need_cols.issubset(cols):
@@ -331,7 +333,9 @@ class ScanAngles:
                         in_data = False
                         continue
                     parts = line.split()
-                    if len(parts) < max(data_idx.values()) + 1:
+                    # Only consider integer indices (avoid scanned axis name)
+                    max_idx = max(v for v in data_idx.values() if isinstance(v, int))
+                    if len(parts) < max_idx + 1:
                         continue
 
                     rec = {
@@ -351,21 +355,15 @@ class ScanAngles:
                             'k':   float(parts[data_idx['K']]),
                             'l':   float(parts[data_idx['L']])
                         })
-                        val = float(parts[data_idx['scan_col']])
-                        scan_col = self.ASCAN_AXES[[c for c in self.ASCAN_AXES if c in data_idx].index('scan_col')] if 'scan_col' in data_idx else None
-                        # direct mapping with earlier stored scan_col variable (safer):
-                        # we retained 'scan_col' variable in the closure scope
-                        if 'scan_col' in data_idx:
-                            sc_idx = data_idx['scan_col']
-                            scanned_value = float(parts[sc_idx])
-                            if scan_col == 'VTTH':
-                                rec['tth'] = scanned_value
-                            elif scan_col == 'VTH':
-                                rec['th'] = scanned_value
-                            elif scan_col == 'Phi':
-                                rec['phi'] = scanned_value
-                            elif scan_col == 'Chi':
-                                rec['chi'] = scanned_value
+                        scanned_value = float(parts[data_idx['scan_col']])
+                        if scan_axis_name == 'VTTH':
+                            rec['tth'] = scanned_value
+                        elif scan_axis_name == 'VTH':
+                            rec['th'] = scanned_value
+                        elif scan_axis_name == 'Phi':
+                            rec['phi'] = scanned_value
+                        elif scan_axis_name == 'Chi':
+                            rec['chi'] = scanned_value
                     else:
                         rec.update({
                             'tth': float(parts[data_idx['VTTH']]),
